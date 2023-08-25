@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV to SRT Converter</title>
+    <script>
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const csvContent = event.target.result;
+                    const srtContent = convertCsvToSrt(csvContent);
+                    downloadSrtFile(srtContent);
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function convertCsvToSrt(csvContent) {
+            const lines = csvContent.split('\n');
+            let srtContent = '';
+            let count = 1;
+
+            for (const line of lines) {
+                const [text, startTime, startMillis, endTime, endMillis] = line.split(',');
+                const srtStartTime = `${startTime},${startMillis}`;
+                const srtEndTime = `${endTime},${endMillis}`;
+                srtContent += `${count}\n${srtStartTime} --> ${srtEndTime}\n${text}\n\n`;
+                count++;
+            }
+
+            return srtContent;
+        }
+
+        function downloadSrtFile(srtContent) {
+            const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'converted_subtitle.srt';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</head>
+<body>
+    <h1>CSV to SRT Converter</h1>
+    <input type="file" accept=".csv" onchange="handleFileSelect(event)">
+</body>
+</html>
